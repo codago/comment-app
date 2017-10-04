@@ -15,6 +15,25 @@ var CommentBox = React.createClass({
       }
     })
   },
+  handleCommentSubmit: function(comment){
+    var oldComments = this.state.data;
+    comment.id = Date.now();
+    var newComments = oldComments.concat([comment]);
+    this.setState({data: newComments})
+    // save to server
+    $.ajax({
+      url: "http://localhost:3000/api/comments",
+      dataType: "json",
+      type: "POST",
+      data: comment,
+      success: function(response){
+        //cuek aja
+      },
+      error: function(xhr, status, err){
+        this.setState({data: oldComments})
+      }.bind(this)
+    })
+  },
   componentDidMount: function(){
     this.loadComments();
   },
@@ -23,7 +42,7 @@ var CommentBox = React.createClass({
       <div className="commentBox">
         <h1>Comments App</h1>
         <CommentList data={this.state.data}/>
-        <CommmentForm/>
+        <CommmentForm onCommentSubmit={this.handleCommentSubmit}/>
       </div>
     )
   }
@@ -46,18 +65,8 @@ var CommmentForm = React.createClass({
     if(!text || !author){
       return;
     }
-    $.ajax({
-      url: "http://localhost:3000/api/comments",
-      dataType: "json",
-      type: "POST",
-      data: {id: Date.now(), author: author, text: text},
-      success: function(response){
-        alert("berhasil");
-      },
-      error: function(xhr, status, err){
-        alert("gagal");
-      }
-    })
+    this.props.onCommentSubmit({author: author, text: text})
+    this.setState({author: '', text: ''})
   },
   render: function(){
     return(
